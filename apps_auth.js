@@ -5,15 +5,19 @@ var app = express();
 var fs = require('fs')
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var port = 80;
 var cors = require('cors');
+var Auth = require('./auth.js');
 
 
 app.get('/', cors(), function (req, res, next) {
-    var data = fs.readFileSync('/home/inclinedplane/public/metadata.json', 'utf8');
+    var data = fs.readFileSync(__dirname + '/public/metadata.json', 'utf8');
     res.send(data);
 });
 
+var secret = '2aabac6d068eef6a7bad3fdf50a05cc5';
+var port = 80;
+var ssi_address = 'relle.ufsc.br:8080';
+var lab_id = 7;
 
 var hold = false;
 var running = false;
@@ -70,32 +74,53 @@ function setupConn(socket) {
 
 io.on('connection', function (socket) {
 
-    var authenticated = false;
+    var auth = new Auth(ssi_address, secret, lab_id)
+
 
     socket.on('new connection', function (data) {
-      console.log(new Date());
+        
+        console.log('new connection ',data,new Date());
 
-        authenticated = true;
-        if (running) {
-            panel.exit();
-            setTimeout(function () {
-                setupConn(socket);
-            }, 500);
-
-        } else {
-            setupConn(socket);
+        if (typeof (data.pass) === 'undefined') {
+            socket.emit('err', {code: 402, message: 'Missing authentication token.'});
+            console.log('erro 402');
+            return;
         }
+
+        var ev = auth.Authorize(data.pass);
+
+        ev.on("not authorized", function () {
+            socket.emit('err', {code: 403, message: 'Permission denied. Note: Resource is using external scheduling system.'});
+            console.log('not authorized');
+            return;
+        })
+
+        ev.on("authorized", function () {
+            
+            if (running) {
+                panel.exit();
+                setTimeout(function () {
+                    setupConn(socket);
+                }, 500);
+
+            } else {
+                setupConn(socket);
+            }
+
+
+        })
 
     });
 
 
+
     socket.on('new angle', function (data) {
 
-      console.log(new Date());
+        console.log(data, new Date());
 
-        if (!configured && !authenticated) {
-            console.log('attempt not authenticated')
-            console.log(data)
+        if (!auth.isAuthorized()) {
+            socket.emit('err', {code: 403, message: 'Permission denied. Note: Resource is using external scheduling system.'});
+            console.log('erro 403');
             return;
         }
 
@@ -104,6 +129,7 @@ io.on('connection', function (socket) {
             sendMessage(socket);
             return;
         }
+        
         var ret = 0;
         if ((ret = panel.setAngle(parseInt(data.angle))) > 0) {
             console.log("ajustando angulo " + data.angle);
@@ -147,8 +173,14 @@ io.on('connection', function (socket) {
 
 
     socket.on('drop', function (data) {
-        if (!configured && !authenticated) {
-            console.log('attempt not authenticated')
+        
+        if (!auth.isAuthorized()) {
+            socket.emit('err', {code: 403, message: 'Permission denied. Note: Resource is using external scheduling system.'});
+            console.log('erro 403');
+            return;
+        }
+        
+        if (!configured) {
             console.log(data)
             return;
         }
@@ -166,17 +198,19 @@ io.on('connection', function (socket) {
 
 
     socket.on('disconnect', function () {
-        if (!authenticated) {
-            console.log('attempt not authenticated')
+        if (!auth.isAuthorized()) {
+            socket.emit('err', {code: 403, message: 'Permission denied. Note: Resource is using external scheduling system.'});
+            console.log('erro 403');
             return;
         }
-      console.log(new Date());
+        
+        console.log('disconnected', new Date());
 
         if (configured) {
+            panel.cancel();
             panel.setAngle(-3);
-            console.log('disconnected');
             setTimeout(function () {
-                configured = running = authenticated = false;
+                configured = running = false;
                 panel.exit();
             }, 500);
         } else {
