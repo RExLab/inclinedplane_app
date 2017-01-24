@@ -8,7 +8,6 @@ var io = require('socket.io')(server);
 var cors = require('cors');
 var Auth = require('./auth.js');
 
-
 app.get('/', cors(), function (req, res, next) {
     var data = fs.readFileSync(__dirname + '/public/metadata.json', 'utf8');
     res.send(data);
@@ -25,7 +24,6 @@ var configured = false;
 
 function drop(socket) {
     panel.start();
-    panel.weighingPosition(0);
 
     setTimeout(function () {
         var data = JSON.parse(panel.getfalltime());
@@ -85,7 +83,7 @@ io.on('connection', function (socket) {
             socket.emit('err', {code: 402, message: 'Missing authentication token.'});
             console.log('erro 402');
             return;
-        }
+        } 
 
         var ev = auth.Authorize(data.pass);
 

@@ -117,6 +117,11 @@ void modbus_SendCommand(tCommand c) {
         addrInit = 0x20;
         value = control.sensor_pos;
         nRegs = 1;
+    }else if (cmd == cmdSET_COMPENSATION) {
+        typeCMD = writeREG;
+        addrInit = 0x24;
+        value = control.compensation;
+        nRegs = 1;
     }
 
 
@@ -215,7 +220,12 @@ void * modbus_Process(void * params) {
             } else if (control.GetFallTime) {
                 modbus_SendCommand(cmdGET_FALLTIME);
                 printf("Enviando %d", cmdGET_FALLTIME);
+            }else if (control.SetCompensation) {
+                modbus_SendCommand(cmdSET_COMPENSATION);
+                printf("Enviando %d", cmdSET_COMPENSATION);
+                control.SetCompensation = 0;
             }
+            
 
             continue;
         }
@@ -317,6 +327,8 @@ void * modbus_Process(void * params) {
         } else if (cmd == cmdSET_SENSORPOS) {
             control.SetForceSensor = 0;
 
+        } else if (cmd == cmdSET_COMPENSATION) {
+            control.SetCompensation = 0;
         }
     }
     printf("Fechando programa"CMD_TERMINATOR);
@@ -344,7 +356,9 @@ void init_control_tad() {
     control.GetAngle = 0;
     control.SetFallStart = 0;
     control.GetFail = 0;
-
+    control.compensation = 40;
+    control.SetCompensation = 1;
+    
     control.GetMass = 0;
     memset(control.rhModel, '\0', __STRINGSIZE__);
     memset(control.rhFirmware, '\0', __STRINGSIZE__);
@@ -601,7 +615,6 @@ NAN_METHOD(GetFallTime) {
 
     control.position_sensor = 1;
     int i;
-    int first_read = 0;
     for (i = 0; i < NUMBER_OF_POSITIONS; i++) {
         control.GetFallTime = 1;
         timeout = TIMEOUT;
@@ -614,10 +627,7 @@ NAN_METHOD(GetFallTime) {
 
             }
         }
-        if (i == 0) {
-            first_read = control.falltime;
-        }
-        sprintf(value, "%i", control.falltime - first_read);
+        sprintf(value, "%i", control.falltime);
         if (i < NUMBER_OF_POSITIONS - 1)
             buffertime = buffertime + std::string(value) + ",";
         else
