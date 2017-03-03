@@ -206,7 +206,7 @@ io.on('connection', function (socket) {
 
         if (configured) {
             panel.cancel();
-            panel.setAngle(-3);
+            panel.setAngle(-15);
             setTimeout(function () {
                 configured = running = false;
                 panel.exit();
