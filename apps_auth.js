@@ -5,13 +5,10 @@ var app = express();
 var fs = require('fs')
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var cors = require('cors');
+
 var Auth = require('./auth.js');
 
-app.get('/', cors(), function (req, res, next) {
-    var data = fs.readFileSync(__dirname + '/public/metadata.json', 'utf8');
-    res.send(data);
-});
+app.use(express.static(__dirname + '/public/'))
 
 var secret = '2aabac6d068eef6a7bad3fdf50a05cc5';
 var port = 80;
