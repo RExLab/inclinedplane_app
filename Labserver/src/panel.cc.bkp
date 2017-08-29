@@ -408,7 +408,6 @@ NAN_METHOD(Exit) {
     NanScope();
     FILE * flog = fopen("msip.log", "w");
     init_control_tad();
-    control.SetCompensation = 0;	
     control.exit = 1;
     fclose(flog);
     uart_Close();

@@ -308,8 +308,8 @@ ifeq ($(strip $(foreach prefix,$(NO_LOAD),\
 endif
 
 quiet_cmd_regen_makefile = ACTION Regenerating $@
-cmd_regen_makefile = cd $(srcdir); /usr/local/lib/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "--toplevel-dir=." -I/home/inclinedplane/build/config.gypi -I/usr/local/lib/node_modules/node-gyp/addon.gypi -I/root/.node-gyp/0.12.6/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/root/.node-gyp/0.12.6" "-Dnode_gyp_dir=/usr/local/lib/node_modules/node-gyp" "-Dnode_lib_file=node.lib" "-Dmodule_root_dir=/home/inclinedplane" binding.gyp
-Makefile: $(srcdir)/../../root/.node-gyp/0.12.6/common.gypi $(srcdir)/../../usr/local/lib/node_modules/node-gyp/addon.gypi $(srcdir)/build/config.gypi $(srcdir)/binding.gyp
+cmd_regen_makefile = cd $(srcdir); /usr/local/lib/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "--toplevel-dir=." -I/home/pi/inclinedplane_app/build/config.gypi -I/usr/local/lib/node_modules/node-gyp/addon.gypi -I/root/.node-gyp/0.12.6/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/root/.node-gyp/0.12.6" "-Dnode_gyp_dir=/usr/local/lib/node_modules/node-gyp" "-Dnode_lib_file=/root/.node-gyp/0.12.6/<(target_arch)/node.lib" "-Dmodule_root_dir=/home/pi/inclinedplane_app" "-Dnode_engine=v8" binding.gyp
+Makefile: $(srcdir)/../../../root/.node-gyp/0.12.6/common.gypi $(srcdir)/../../../usr/local/lib/node_modules/node-gyp/addon.gypi $(srcdir)/build/config.gypi $(srcdir)/binding.gyp
 	$(call do_cmd,regen_makefile)
 
 # "all" is a concatenation of the "all" targets from all the included

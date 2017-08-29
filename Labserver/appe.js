@@ -1,7 +1,6 @@
 var express = require('express');
 var panel = require('./build/Release/panel.node');
 
-
 var app = express();
 var configured = false;
 
@@ -92,9 +91,8 @@ var server = app.listen(80, function () {
   var port = server.address().port;
   
   console.log('App listening at http://%s:%s', host, port);
-  //panel.setup();
-  //panel.run();
-
+//   panel.setup();
+//   panel.run();
 
 });
 

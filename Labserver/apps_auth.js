@@ -5,7 +5,6 @@ var app = express();
 var fs = require('fs')
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-
 var Auth = require('./auth.js');
 
 app.use(express.static(__dirname + '/public/'))
@@ -202,13 +201,16 @@ io.on('connection', function (socket) {
         console.log('disconnected', new Date());
 
         if (configured) {
+            console.log("configured");
             panel.cancel();
             panel.setAngle(-15);
             setTimeout(function () {
+                console.log("on setTimeout");
                 configured = running = false;
                 panel.exit();
             }, 500);
         } else {
+            console.log("on else clausule");
             panel.setup();
             panel.run();
             panel.exit();
